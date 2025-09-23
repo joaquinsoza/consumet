@@ -79,21 +79,26 @@ class MangaDex extends MangaParser {
    * @param query search query
    * @param page page number (default: 1)
    * @param limit limit of results to return (default: 20) (max: 100) (min: 1)
+   * @param contentRating array of content ratings to filter by (optional)
    */
   override search = async (
     query: string,
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
+    contentRating?: string[]
   ): Promise<ISearch<IMangaResult>> => {
     if (page <= 0) throw new Error('Page number must be greater than 0');
     if (limit > 100) throw new Error('Limit must be less than or equal to 100');
     if (limit * (page - 1) >= 10000) throw new Error('not enough results');
 
     try {
+      const contentRatingParams = contentRating
+        ? contentRating.map((rating) => `&contentRating[]=${encode(rating)}`).join('')
+        : '';
       const res = await this.client.get(
-        `${this.apiUrl}/manga?limit=${limit}&title=${encode(query)}&limit=${limit}&offset=${
+        `${this.apiUrl}/manga?limit=${limit}&title=${encode(query)}&offset=${
           limit * (page - 1)
-        }&order[relevance]=desc`
+        }&order[relevance]=desc${contentRatingParams}`
       );
 
       if (res.data.result == 'ok') {

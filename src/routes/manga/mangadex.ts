@@ -4,11 +4,17 @@ import { MANGA } from '@consumet/extensions';
 const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
   const mangadex = new MANGA.MangaDex();
 
+  // Valid MangaDex content ratings
+  const VALID_CONTENT_RATINGS = ['safe', 'suggestive', 'erotica', 'pornographic'];
+
   fastify.get('/', (_, rp) => {
     rp.status(200).send({
       intro:
         "Welcome to the mangadex provider: check out the provider's website @ https://mangadex.org/",
       routes: ['/:query', '/info/:id', '/read/:chapterId'],
+      queryParams: {
+        '/:query': 'page, limit, contentRating (comma-separated or multiple values)'
+      },
       documentation: 'https://docs.consumet.org/#tag/mangadex',
     });
   });
@@ -16,11 +22,30 @@ const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
   fastify.get('/:query', async (request: FastifyRequest, reply: FastifyReply) => {
     const query = (request.params as { query: string }).query;
 
-    const page = (request.query as { page: number }).page;
+    const { page, limit, contentRating } = request.query as {
+      page?: number;
+      limit?: number;
+      contentRating?: string | string[];
+    };
 
-    const res = await mangadex.search(query, page);
+    // Parse contentRating - handle both single string and comma-separated values
+    let contentRatingArray: string[] | undefined;
+    if (contentRating) {
+      if (Array.isArray(contentRating)) {
+        contentRatingArray = contentRating;
+      } else {
+        contentRatingArray = contentRating.split(',').map(rating => rating.trim());
+      }
+    }
 
-    reply.status(200).send(res);
+    try {
+      const res = await mangadex.search(query, page, limit, contentRatingArray);
+      reply.status(200).send(res);
+    } catch (err) {
+      reply.status(500).send({
+        message: (err as Error).message || 'Something went wrong. Please try again later.'
+      });
+    }
   });
 
   fastify.get('/info/:id', async (request: FastifyRequest, reply: FastifyReply) => {
