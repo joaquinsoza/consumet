@@ -5,9 +5,14 @@
     "scripts": {
         "start": "ts-node src/main.ts",
         "dev": "nodemon src/main.ts",
-        "build": "tsc",
+        "build": "npm run build:extensions && tsc",
+        "build:extensions": "cd packages/consumet-extensions && npm run build",
+        "postinstall": "npm run build:extensions",
         "lint": "prettier --write \"src/**/*.ts\""
     },
+    "workspaces": [
+        "packages/*"
+    ],
     "engines": {
         "node": ">=12.5.0",
         "yarn": ">=1.17.3"

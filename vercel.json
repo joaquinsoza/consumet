@@ -1,5 +1,7 @@
 {
     "version": 2,
+    "installCommand": "npm install && npm run build:extensions",
+    "buildCommand": "npm run build",
     "builds": [
       {
         "src": "/src/main.ts",
