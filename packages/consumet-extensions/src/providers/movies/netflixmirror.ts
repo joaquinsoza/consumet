@@ -37,8 +37,13 @@ class NetflixMirror extends MovieParser {
       const { data } = await this.client.get(
         'https://raw.githubusercontent.com/2004durgesh/nfmirror-cookies/refs/heads/main/captured-cookies.json'
       );
-      for (const cookie of data.cookiesByDomain['.netfree2.cc']) {
-        this.nfCookie += `${cookie.name}=${cookie.value.replace('%3A%3Asu', '%3A%3Ani')};`;
+      // Check if the expected data structure exists
+      if (data?.cookiesByDomain?.['.netfree2.cc'] && Array.isArray(data.cookiesByDomain['.netfree2.cc'])) {
+        for (const cookie of data.cookiesByDomain['.netfree2.cc']) {
+          this.nfCookie += `${cookie.name}=${cookie.value.replace('%3A%3Asu', '%3A%3Ani')};`;
+        }
+      } else {
+        console.warn('NetflixMirror: Cookie data structure not as expected, skipping cookie initialization');
       }
     } catch (err) {
       console.error('Failed to get cookie:', err);
