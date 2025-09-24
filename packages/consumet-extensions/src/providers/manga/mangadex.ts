@@ -321,17 +321,22 @@ class MangaDex extends MangaParser {
   private fetchAllChapters = async (
     mangaId: string,
     offset: number,
+    lang: string = "en",
     res?: AxiosResponse<any, any>
   ): Promise<any[]> => {
     if (res?.data?.offset + 96 >= res?.data?.total) {
       return [];
     }
 
+    const contentRatingParams = ["safe", "suggestive", "erotica", "pornographic"]
+      .map((rating) => `&contentRating[]=${encode(rating)}`)
+      .join("");
+
     const response = await this.client.get(
-      `${this.apiUrl}/manga/${mangaId}/feed?offset=${offset}&limit=96&order[volume]=desc&order[chapter]=desc&translatedLanguage[]=en`
+      `${this.apiUrl}/manga/${mangaId}/feed?offset=${offset}&limit=96&order[volume]=desc&order[chapter]=desc&translatedLanguage[]=${lang}${contentRatingParams}`
     );
 
-    return [...response.data.data, ...(await this.fetchAllChapters(mangaId, offset + 96, response))];
+    return [...response.data.data, ...(await this.fetchAllChapters(mangaId, offset + 96, lang, response))];
   };
 
   private fetchCoverImage = async (coverId: string): Promise<string> => {
