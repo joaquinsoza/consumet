@@ -48,8 +48,8 @@ const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
     }
   });
 
-  fastify.get('/info/:id', async (request: FastifyRequest, reply: FastifyReply) => {
-    const id = decodeURIComponent((request.params as { id: string }).id);
+  fastify.get('/info', async (request: FastifyRequest, reply: FastifyReply) => {
+    const id = decodeURIComponent((request.query as { id: string }).id);
 
     try {
       const res = await mangadex
@@ -65,9 +65,9 @@ const routes = async (fastify: FastifyInstance, options: RegisterOptions) => {
   });
 
   fastify.get(
-    '/read/:chapterId',
+    '/read',
     async (request: FastifyRequest, reply: FastifyReply) => {
-      const chapterId = (request.params as { chapterId: string }).chapterId;
+      const chapterId = (request.query as { chapterId: string }).chapterId;
 
       try {
         const res = await mangadex.fetchChapterPages(chapterId);
